@@ -10,6 +10,8 @@ import base64
 import json
 import logging
 import requests
+import os
+from dotenv import load_dotenv
 
 from datetime import datetime as dt
 
@@ -32,7 +34,7 @@ DOMAIN_ALT = "bytick"
 TLD_MAIN = "com"
 TLD_NL = "nl"
 TLD_HK = "com.hk"
-
+load_dotenv()
 
 def generate_signature(use_rsa_authentication, secret, param_str):
     def generate_hmac():
@@ -281,7 +283,13 @@ class _V5HTTPManager:
 
             # Attempt the request.
             try:
-                s = self.client.send(r, timeout=self.timeout)
+                # MODIFIED
+                proxies = {
+                    'http': os.getenv('HTTP_PROXY'),
+                    'https': os.getenv('HTTPS_PROXY')
+                }
+                settings = self.client.merge_environment_settings(r.url,proxies=proxies,stream=None,verify=True,cert=None)
+                s = self.client.send(r, timeout=self.timeout, **settings)
 
             # If requests fires an error, retry.
             except (
