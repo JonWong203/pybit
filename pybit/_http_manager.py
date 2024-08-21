@@ -36,6 +36,7 @@ TLD_NL = "nl"
 TLD_HK = "com.hk"
 load_dotenv()
 
+
 def generate_signature(use_rsa_authentication, secret, param_str):
     def generate_hmac():
         hash = hmac.new(
@@ -268,7 +269,7 @@ class _V5HTTPManager:
                         method, path, data=req_params, headers=headers
                     )
                 )
-            
+
             # Log the request.
             if self.log_requests:
                 if req_params:
@@ -285,10 +286,11 @@ class _V5HTTPManager:
             try:
                 # MODIFIED
                 proxies = {
-                    'http': os.getenv('HTTP_PROXY'),
-                    'https': os.getenv('HTTPS_PROXY')
+                    'http': os.getenv('QUOTAGUARDSHIELD_URL'),
+                    'https': os.getenv('QUOTAGUARDSHIELD_URL')
                 }
-                settings = self.client.merge_environment_settings(r.url,proxies=proxies,stream=None,verify=True,cert=None)
+                settings = self.client.merge_environment_settings(
+                    r.url, proxies=proxies, stream=None, verify=True, cert=None)
                 s = self.client.send(r, timeout=self.timeout, **settings)
 
             # If requests fires an error, retry.
@@ -366,10 +368,12 @@ class _V5HTTPManager:
                         )
 
                         # Calculate how long we need to wait in milliseconds.
-                        limit_reset_time = int(s.headers["X-Bapi-Limit-Reset-Timestamp"])
+                        limit_reset_time = int(
+                            s.headers["X-Bapi-Limit-Reset-Timestamp"])
                         limit_reset_str = dt.fromtimestamp(limit_reset_time / 10**3).strftime(
                             "%H:%M:%S.%f")[:-3]
-                        delay_time = (int(limit_reset_time) - _helpers.generate_timestamp()) / 10**3
+                        delay_time = (int(limit_reset_time) -
+                                      _helpers.generate_timestamp()) / 10**3
                         error_msg = (
                             f"API rate limit will reset at {limit_reset_str}. "
                             f"Sleeping for {int(delay_time * 10**3)} milliseconds"
